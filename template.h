@@ -13,5 +13,14 @@
     512
 #define ATTRIBUTES_TEMPLATE \
     "\tprivate %s %s;\n"
-
+#define DEFAULT_CONSTRUCTOR_TEMPLATE \
+    "\tpublic %s() {\n\t}\n\n"
+#define DEFAULT_GETTER \
+    "\tpublic %s get%s() {\n\t\treturn this.%s;\n\t}\n"
+#define DEFAULT_SETTER \
+    "\tpublic void set%s(%s %s) {\n\t\tthis.%s = %s;\n\t}\n"
+#define EQUALS \
+    "\tpublic boolean equals(Object o) {\n\t\tif (o == null) return false;\n\t\tif(!(o instanceof %s %c)) return false;\n\t\treturn "
+#define TO_STRING \
+    "\tpublic String toString() {\n\t\treturn "
 #endif
