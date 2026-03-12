@@ -11,6 +11,8 @@
     "1) Add Attributes\n2) Add Method\n3) Create class\n"
 #define MAX_ATTRIBUTES \
     512
+#define MAX_METHOD \
+    512
 #define ATTRIBUTES_TEMPLATE \
     "\tprivate %s %s;\n"
 #define DEFAULT_CONSTRUCTOR_TEMPLATE \
@@ -23,4 +25,5 @@
     "\tpublic boolean equals(Object o) {\n\t\tif (o == null) return false;\n\t\tif(!(o instanceof %s %c)) return false;\n\t\treturn "
 #define TO_STRING \
     "\tpublic String toString() {\n\t\treturn "
+
 #endif

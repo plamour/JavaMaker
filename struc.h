@@ -8,11 +8,21 @@ typedef struct JavaAttribute
     char *nameAttribute;
 } JavaAttribute;
 
+
+typedef struct JavaMethod
+{
+    char *typeMethod;
+    char *nameMethod;
+} JavaMethod;
+
+
 typedef struct JavaClass JavaClass;
 struct JavaClass
 {
     char *className;
     int nbOfAttributes;
+    int nbOfMethod;
+    JavaMethod *javaMethod;
     JavaAttribute *javaAttribute;
     JavaClass *mother_class;
 };

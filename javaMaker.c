@@ -5,6 +5,8 @@
 
 #include "struc.h"
 #include "template.h"
+#include "scanner.h"
+
 int isPrimaryType(const char* type)
 {
     return (strcmp(type, "int") == 0 ||
@@ -16,20 +18,6 @@ int isPrimaryType(const char* type)
             strcmp(type, "float") == 0 ||
             strcmp(type, "double") == 0);
 }
-
-void freeEverything(JavaClass* java_class)
-{
-    for (int i = 0; i <= java_class->nbOfAttributes; ++i)
-    {
-        free(java_class->javaAttribute[i].nameAttribute);
-        free(java_class->javaAttribute[i].typeAttribute);
-    }
-    free(java_class->className);
-    free(java_class->javaAttribute);
-    free(java_class);
-}
-
-
 
 int inputInteger(int from, int to)
 {
@@ -47,6 +35,24 @@ char* inputString()
     return s;
 }
 
+void freeEverything(JavaClass* java_class)
+{
+    for (int i = 0; i <= java_class->nbOfAttributes; ++i)
+    {
+        free(java_class->javaAttribute[i].nameAttribute);
+        free(java_class->javaAttribute[i].typeAttribute);
+    }
+    for (int i = 0; i <= java_class->nbOfMethod; ++i)
+    {
+        free(java_class->javaMethod[i].nameMethod);
+        free(java_class->javaMethod[i].typeMethod);
+    }
+
+    free(java_class->className);
+    free(java_class->javaAttribute);
+    free(java_class->javaMethod);
+    free(java_class);
+}
 
 void addAttributes(JavaClass* java_class)
 {
@@ -87,6 +93,49 @@ void addAttributes(JavaClass* java_class)
     java_class->javaAttribute[java_class->nbOfAttributes] = java_attribute;
     java_class->nbOfAttributes++;
 }
+
+void addMethod(JavaClass *java_class)
+{
+    printf(TYPE_OPTION);
+
+    int option = inputInteger(1, 6);
+    char* type;
+    char* name;
+
+    switch (option)
+    {
+    case 1: type = strdup("int");
+        break;
+    case 2: type = strdup("double");
+        break;
+    case 3: type = strdup("float");
+        break;
+    case 4: type = strdup("long");
+        break;
+    case 5: type = strdup("boolean");
+        break;
+    case 6:
+        printf("Write the custom type :\n");
+        type = inputString();
+        break;
+    default: exit(1);
+    }
+    printf("What will be the name of the Method :\n");
+    name = inputString();
+    JavaMethod java_method;
+    java_method.typeMethod = type;
+    java_method.nameMethod = name;
+
+    if (!java_class->javaMethod)
+    {
+        exit(2);
+    }
+    java_class->javaAttribute[java_class->nbOfMethod] = java_method;
+    java_class->nbOfMethod++;
+}
+
+
+
 void writeEqual(JavaClass *java_class, FILE *file)
 {
     char* equals = malloc(sizeof(char)*1024);
@@ -219,7 +268,7 @@ void writeJavaClass(JavaClass* java_class)
     FILE *file;
     char *filename = malloc(sizeof(char)*64);
     snprintf(filename,sizeof(char)*64,"%s.java",java_class->className);
-    file = fopen(filename,"wx");
+    file = fopen(filename,"w");
     fprintf(file,IMPORT);
     fprintf(file,CLASS,java_class->className);
     writeAttributes(java_class,file);
@@ -241,14 +290,21 @@ void writeJavaClass(JavaClass* java_class)
 
 int main(void)
 {
-    JavaClass* java_class = malloc(sizeof(*java_class));
-    JavaAttribute* java_attribute = malloc(sizeof(*java_attribute) * MAX_ATTRIBUTES);
+    JavaClass *java_class = malloc(sizeof(*java_class));
+    JavaAttribute *java_attribute = malloc(sizeof(*java_attribute) * MAX_ATTRIBUTES);
+    JavaMethod *java_method = malloc(sizeof(*java_method) * MAX_METHOD);
     java_class->nbOfAttributes = 0;
+    java_class->nbOfMethod = 0;
     java_class->javaAttribute = java_attribute;
+    java_class->javaMethod = java_method;
+    // FILE *file = fopen("Mom.java","r");
+    // JavaClass *java_class = classScanner(file);
+    // fclose(file);
     java_class->mother_class = NULL;
     printf("What the Class Name :\n");
     char* name = inputString();
     java_class->className = name;
+    printf("%d",java_class->nbOfAttributes);
     while (1)
     {
         system("clear");
@@ -261,6 +317,7 @@ int main(void)
             addAttributes(java_class);
             break;
         case 2:
+            addMethod(java_class);
             break;
         case 3:
             writeJavaClass(java_class);
