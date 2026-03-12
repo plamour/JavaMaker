@@ -6,6 +6,7 @@ typedef struct JavaAttribute
 {
     char *typeAttribute;
     char *nameAttribute;
+
 } JavaAttribute;
 
 
@@ -13,6 +14,11 @@ typedef struct JavaMethod
 {
     char *typeMethod;
     char *nameMethod;
+    int nbOfParameter;
+    char **typeParameter;
+    char **nameParameter;
+    char *insideCode;
+
 } JavaMethod;
 
 
