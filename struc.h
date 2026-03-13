@@ -23,6 +23,7 @@ typedef struct JavaMethod
 
 
 typedef struct JavaClass JavaClass;
+
 struct JavaClass
 {
     char *className;
@@ -32,5 +33,9 @@ struct JavaClass
     JavaAttribute *javaAttribute;
     JavaClass *mother_class;
 };
+
+
+
+
 
 #endif

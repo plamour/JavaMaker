@@ -14,21 +14,9 @@
 
 int main(void)
 {
-    JavaClass *java_class = malloc(sizeof(*java_class));
-    JavaAttribute *java_attribute = malloc(sizeof(*java_attribute) * MAX_ATTRIBUTES);
-    JavaMethod *java_method = malloc(sizeof(*java_method) * MAX_METHOD);
-    java_class->nbOfAttributes = 0;
-    java_class->nbOfMethod = 0;
-    java_class->javaAttribute = java_attribute;
-    java_class->javaMethod = java_method;
-    // FILE *file = fopen("Mom.java","r");
-    // JavaClass *java_class = classScanner(file);
-    // fclose(file);
-    java_class->mother_class = NULL;
-    printf("What the Class Name :\n");
-    char* name = inputString();
-    java_class->className = name;
-    printf("%d",java_class->nbOfAttributes);
+    int* nbOfClass = malloc(sizeof(int));
+    *nbOfClass = 0;
+    JavaClass *javaClasses = malloc(sizeof(*javaClasses) * MAX_CLASS);;
     while (1)
     {
         system("clear");
@@ -38,16 +26,20 @@ int main(void)
         switch (option)
         {
         case 1:
-            addAttributes(java_class);
+            addAttributes(javaClasses);
             break;
         case 2:
-            addMethod(java_class);
+            addMethod(javaClasses);
             break;
         case 3:
-            writeJavaClass(java_class);
+            writeJavaClass(javaClasses);
+            return 0;
+        case 4:
+            /* TODO - < Write all classes >*/
+            writeJavaClass(javaClasses);
             return 0;
         default:
-            freeEverything(java_class);
+            freeEverything(javaClasses);
             return 1;
         }
     }

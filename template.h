@@ -5,16 +5,22 @@
     "import java.io.*;\nimport java.util.*;\n"
 #define CLASS \
     "public class %s {\n"
+#define CLASS_EXTEND \
+    "public class %s extend %s {\n"
 #define TYPE_OPTION \
     "1) int\n2) double\n3) float\n4) long\n5) boolean\n6) Custom\n"
 #define FIRST_OPTION \
-    "1) Add Attributes\n2) Add Method\n3) Create class\n"
+    "1) List Class\n2) Rework one class\n3)Add Class\n4) Generate class\n"
+#define CLASS_OPTION \
+    "1) Add Attribute\n2) Add Method\n3) Show Attributes\n4) Show Methods\n5)Choose Mother Class\n6) Exit"
 #define MAX_ATTRIBUTES \
     512
 #define MAX_METHOD \
     512
 #define MAX_PARAMETER_METHOD \
     32
+#define MAX_CLASS \
+    128
 #define ATTRIBUTES_TEMPLATE \
     "\tprivate %s %s;\n"
 #define DEFAULT_CONSTRUCTOR_TEMPLATE \
