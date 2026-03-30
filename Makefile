@@ -1,22 +1,30 @@
 CC = gcc
-FLAGS = -g -Wall -Wextra
+FLAGS = -Wall -Wextra -I$(INCLUDE_DIR)
 BUILD_DIR = build
+OBJ_DIR = obj
+SRC_DIR = src
+INCLUDE_DIR = include
 
-build:$(BUILD_DIR)/javaMaker
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
-$(BUILD_DIR)/javaMaker: javaMaker.o scanner.o classWriter.o classCreator.o
-	mkdir -p build
-	$(CC) $(FLAGS) -o $@ $^
-	rm -rf *.o
+TARGET = $(BUILD_DIR)/javaMaker
 
-javaMaker.o: javaMaker.c struc.h template.h scanner.h writer.h
-scanner.o: scanner.c struc.h template.h scanner.h
-classWriter.o: classWriter.c struc.h template.h
-classCreator.o: classCreator.c struc.h template.h
+all:$(TARGET)
 
-%.o:%.c
-	$(CC) $(FLAGS) -c $<
+.PHONY: all clean
+
+$(TARGET): $(OBJS) | $(BUILD_DIR)
+	$(CC) $(FLAGS) $^ -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(FLAGS) -c $< -o $@
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -rf build/*
-	rm -rf *.o
+	rm -rf $(BUILD_DIR) $(OBJ_DIR)

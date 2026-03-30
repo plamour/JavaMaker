@@ -26,6 +26,18 @@ char* inputString()
     return strdup(s);
 }
 
+int isMotherOf(JavaClass *motherClass,JavaClass *childClass)
+{
+    while (motherClass->mother_class)
+    {
+        if (childClass == motherClass->mother_class)
+        {
+            return 1;
+        }
+        motherClass = motherClass->mother_class;
+    }
+    return 0;
+}
 
 int getClassIndex(JavaClass *javaClasses,JavaClass *javaClass,int nbOfClasses)
 {
@@ -105,17 +117,33 @@ void changeMotherClass(JavaClass* javaClasses, JavaClass* javaClass, int *nbOfCl
         {
             if (i >= skip)
             {
-                printf("%d) %s\n",i-1,javaClass->className);
+                if (isMotherOf(&javaClasses[i],javaClass))
+                {
+                    printf("%d) %s UNAVAILABLE\n",i-1,javaClasses[i].className);
+
+                } else
+                {
+                    printf("%d) %s\n",i-1,javaClasses[i].className);
+
+                }
             } else
             {
-                printf("%d) %s\n",i,javaClass->className);
+              if (isMotherOf(&javaClasses[i],javaClass))
+                {
+                    printf("%d) %s UNAVAILABLE\n",i,javaClasses[i].className);
 
+                } else
+                {
+                    printf("%d) %s\n",i,javaClasses[i].className);
+
+                }
             }
         }
     }
-    int option = inputInteger(1,*nbOfClasses-1);
+    int option = inputInteger(0,*nbOfClasses-1);
     if (option >= skip) option--;
-    javaClass->mother_class = javaClasses[option];
+
+    javaClass->mother_class = &javaClasses[option];
 }
 
 
@@ -227,6 +255,7 @@ void addParentClass(JavaClass *javaClasses,int *nbOfClass,JavaClass *childClass)
 
 void editClass(JavaClass *javaClasses,JavaClass *javaClass,int *nbOfClass)
 {
+    printf(CLASS_TITLE,javaClass->className);
     printf(CLASS_OPTION);
     int option = inputInteger(1, 6);
     while (option !=6)
@@ -235,9 +264,11 @@ void editClass(JavaClass *javaClasses,JavaClass *javaClass,int *nbOfClass)
         {
         case 1:
             addAttributes(javaClass);
+            system("clear");
             break;
         case 2:
             addMethod(javaClass);
+            system("clear");
             break;
         case 3:
             showAttributesAndMother(javaClass);
@@ -246,7 +277,8 @@ void editClass(JavaClass *javaClasses,JavaClass *javaClass,int *nbOfClass)
             showMethod(javaClass);
             break;
         case 5:
-            if (*nbOfClass < 1)
+            system("clear");
+            if (*nbOfClass <= 1)
             {
                 printf("There only one class (this one) !\nDo you wish to create the parent class ?\n(Y/n): ");
                 char *opt = inputString();
@@ -261,7 +293,7 @@ void editClass(JavaClass *javaClasses,JavaClass *javaClass,int *nbOfClass)
                 }
             } else
             {
-                printf("\nDo you wish to create the parent class ?\n(Y/n): ");
+                printf("Do you wish to create the parent class ?\n(Y/n): ");
                 char *opt = inputString();
                 opt[0] = tolower(opt[0]);
                 if (strcmp(opt,"y") == 0)
@@ -279,8 +311,9 @@ void editClass(JavaClass *javaClasses,JavaClass *javaClass,int *nbOfClass)
         default:
             break;
         }
-        system("clear");
+        printf(CLASS_TITLE,javaClass->className);
         printf(CLASS_OPTION);
         option = inputInteger(1, 6);
     }
+    system("clear");
 }

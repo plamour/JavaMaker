@@ -18,31 +18,7 @@ int isPrimaryType(const char* type)
             strcmp(type, "double") == 0);
 }
 
-void freeEverything(JavaClass* java_class)
-{
-    for (int i = 0; i < java_class->nbOfAttributes; ++i)
-    {
-        free(java_class->javaAttribute[i].nameAttribute);
-        free(java_class->javaAttribute[i].typeAttribute);
-    }
-    for (int i = 0; i < java_class->nbOfMethod; ++i)
-    {
-        free(java_class->javaMethod[i].nameMethod);
-        free(java_class->javaMethod[i].typeMethod);
-        for (int j = 0; j < java_class->javaMethod[i].nbOfParameter; ++j)
-        {
-            free(java_class->javaMethod[i].nameParameter[j]);
-            free(java_class->javaMethod[i].typeParameter[j]);
-        }
-        free(java_class->javaMethod[i].nameParameter);
-        free(java_class->javaMethod[i].typeParameter);
-    }
 
-    free(java_class->className);
-    free(java_class->javaAttribute);
-    free(java_class->javaMethod);
-    free(java_class);
-}
 
 void writeEqual(JavaClass *java_class, FILE *file)
 {
@@ -84,7 +60,7 @@ void writeEqual(JavaClass *java_class, FILE *file)
     {
         strcat(equals," && super.equals(o)");
     }
-    strcat(equals,";\n\t}");
+    strcat(equals,";\n\t}\n");
     fprintf(file,equals);
 }
 
@@ -99,10 +75,23 @@ void writeToString(JavaClass *java_class, FILE *file)
     for (int i = 0; i < java_class->nbOfAttributes; ++i)
     {
         JavaAttribute java_attribute = java_class->javaAttribute[i];
-        strcat(toString,"\"");
-        strcat(toString,java_attribute.nameAttribute);
-        strcat(toString,": \" + this.");
-        strcat(toString,java_attribute.nameAttribute);
+        if (isPrimaryType(java_attribute.typeAttribute))
+        {
+            strcat(toString,"\"");
+            strcat(toString,java_attribute.nameAttribute);
+            strcat(toString,": \" + this.");
+            strcat(toString,java_attribute.nameAttribute);
+        } else
+        {
+            strcat(toString,"\"");
+            strcat(toString,java_attribute.nameAttribute);
+            strcat(toString,": \" + this.");
+            strcat(toString,java_attribute.nameAttribute);
+            strcat(toString,": .toString()");
+
+        }
+
+
         if (i != java_class->nbOfAttributes-1)
         {
             strcat(toString," + ");
@@ -145,24 +134,45 @@ void writeConstructor(JavaClass *java_class, FILE *file)
     char constructor[1024];
     snprintf(constructor,sizeof(char)*1024,"\tpublic %s(",java_class->className);
 
-    if (java_class->mother_class)
+    JavaClass* tmp = java_class;
+    int parentDepth = 0;
+
+    if (tmp->mother_class)
     {
-        for (int i = 0; i < java_class->mother_class->nbOfAttributes; ++i)
+        while (tmp->mother_class)
         {
-            JavaAttribute java_attribute = java_class->mother_class->javaAttribute[i];
-            if (i == java_class->mother_class->nbOfAttributes-1)
-            {
-                strcat(constructor,java_attribute.typeAttribute);
-                strcat(constructor," ");
-                strcat(constructor,java_attribute.nameAttribute);
+            parentDepth++;
+            tmp = tmp->mother_class;
+        }
+        tmp = java_class;
+        JavaClass tmpArray[parentDepth];
+        int loop = 0;
+        while (tmp->mother_class)
+        {
+            tmpArray[loop] = *tmp->mother_class;
+            loop++;
+            tmp = tmp->mother_class;
+        }
 
-            } else
+        for (int j = parentDepth-1; j >= 0;j--)
+        {
+            JavaClass loopJavaClass = tmpArray[j];
+            for (int i = 0; i < loopJavaClass.nbOfAttributes; ++i)
             {
-                strcat(constructor,java_attribute.typeAttribute);
-                strcat(constructor," ");
-                strcat(constructor,java_attribute.nameAttribute);
-                strcat(constructor,",");
+                JavaAttribute javaAttribute = loopJavaClass.javaAttribute[i];
+                if (i == loopJavaClass.nbOfAttributes-1)
+                {
+                    strcat(constructor,javaAttribute.typeAttribute);
+                    strcat(constructor," ");
+                    strcat(constructor,javaAttribute.nameAttribute);
+                } else
+                {
+                    strcat(constructor,javaAttribute.typeAttribute);
+                    strcat(constructor," ");
+                    strcat(constructor,javaAttribute.nameAttribute);
+                    strcat(constructor,",");
 
+                }
             }
         }
         if (java_class->nbOfAttributes > 0)
@@ -192,20 +202,34 @@ void writeConstructor(JavaClass *java_class, FILE *file)
     }
     strcat(constructor,") {\n\t\t");
 
-    if (java_class->mother_class)
+    tmp = java_class;
+    if (tmp->mother_class)
     {
-        strcat(constructor,"super(");
-        for (int i = 0; i < java_class->mother_class->nbOfAttributes; ++i)
+        JavaClass tmpArray[parentDepth];
+        int loop = 0;
+        while (tmp->mother_class)
         {
-            strcat(constructor,java_class->mother_class->javaAttribute[i].nameAttribute);
-            if (i != java_class->mother_class->nbOfAttributes-1)
+            tmpArray[loop] = *tmp->mother_class;
+            loop++;
+            tmp = tmp->mother_class;
+        }
+        strcat(constructor,"super(");
+        for (int j = parentDepth-1; j >= 0;j--)
+        {
+            JavaClass loopJavaClass = tmpArray[j];
+            for (int i = 0; i < loopJavaClass.nbOfAttributes; ++i)
             {
-                strcat(constructor,",");
+                strcat(constructor,loopJavaClass.javaAttribute[i].nameAttribute);
+                if (i != loopJavaClass.nbOfAttributes-1)
+                {
+                    strcat(constructor,",");
+                }
+
             }
         }
         strcat(constructor,");");
-
     }
+
     for (int i = 0; i < java_class->nbOfAttributes; ++i)
     {
         JavaAttribute java_attribute = java_class->javaAttribute[i];
@@ -219,6 +243,9 @@ void writeConstructor(JavaClass *java_class, FILE *file)
     strcat(constructor,"\n\t}\n\n");
     fprintf(file,constructor);
 }
+
+
+
 void writeMethod(JavaClass *java_class ,FILE *file)
 {
     for (int i = 0; i < java_class->nbOfMethod; ++i)
@@ -269,10 +296,10 @@ void writeJavaClass(JavaClass *java_class)
     writeAttributes(java_class,file);
     writeConstructor(java_class,file);
     writeGetterAndSetter(java_class,file);
-    writeEqual(java_class,file);
     writeMethod(java_class,file);
+    writeEqual(java_class,file);
+    writeToString(java_class,file);
     fprintf(file,"\n}");
     free(filename);
     fclose(file);
-    freeEverything(java_class);
 }
